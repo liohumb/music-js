@@ -277,7 +277,7 @@
                     blip.connect( audioCtx.destination )
                     blip.start( 0 )
                 }
-                if ( audioCtx.state === 'suspended' ) audioCtx.resume()
+                if ( audioCtx.state !== 'running' ) audioCtx.resume()
             }
             
             // X normalisé [0..1] -> fréquence quantifiée sur la gamme (grave à gauche).
@@ -552,6 +552,17 @@
                 bgtext.style.opacity = '0'
             }
             
+            // (pointerup/touchend), pas au pointerdown. On (re)tente jusqu'à l'état 'running'.
+            function unlockOnGesture() {
+                unlockAudio()
+                if ( audioCtx && audioCtx.state === 'running' ) {
+                    document.removeEventListener( 'pointerup', unlockOnGesture, true )
+                    document.removeEventListener( 'touchend', unlockOnGesture, true )
+                }
+            }
+            document.addEventListener( 'pointerup', unlockOnGesture, true )
+            document.addEventListener( 'touchend', unlockOnGesture, true )
+
             canvas.addEventListener( 'pointerdown', (e) => {
                 e.preventDefault()
                 unlockAudio()
